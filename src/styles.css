@@ -144,3 +144,52 @@
     color: var(--color-foreground);
   }
 }
+
+@utility bg-hero-fade {
+  background-image: linear-gradient(
+    to top,
+    var(--background) 4%,
+    color-mix(in oklab, var(--background) 70%, transparent) 45%,
+    transparent 100%
+  );
+}
+
+@utility bg-hero-glow {
+  background-image: radial-gradient(
+    circle at 50% 45%,
+    color-mix(in oklab, var(--primary) 22%, transparent),
+    transparent 60%
+  );
+}
+
+@utility shadow-glow {
+  box-shadow: var(--shadow-glow);
+}
+
+@keyframes splash-bar {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(320%);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: scale(1.04);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@utility animate-splash-bar {
+  animation: splash-bar 1.4s ease-in-out infinite;
+}
+
+@utility animate-fade-in {
+  animation: fade-in 0.9s ease-out both;
+}
