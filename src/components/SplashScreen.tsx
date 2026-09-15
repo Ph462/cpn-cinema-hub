@@ -28,6 +28,7 @@ export function SplashScreen() {
           <span className="grid h-14 w-14 place-items-center rounded-2xl bg-primary text-2xl font-black text-primary-foreground shadow-glow">
              CPN
           </span>
+          <div>
           <span className="text-4xl font-black tracking-tight text-foreground">
             CPN <span className="text-primary">Movies</span>
           </span>
