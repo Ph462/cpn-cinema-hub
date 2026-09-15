@@ -10,12 +10,24 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as MusicRouteImport } from './routes/music'
+import { Route as SearchRouteImport } from './routes/search'
 import { Route as CategorySlugRouteImport } from './routes/category.$slug'
 import { Route as TitleIdRouteImport } from './routes/title.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MusicRoute = MusicRouteImport.update({
+  id: '/music',
+  path: '/music',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SearchRoute = SearchRouteImport.update({
+  id: '/search',
+  path: '/search',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CategorySlugRoute = CategorySlugRouteImport.update({
@@ -31,30 +43,38 @@ const TitleIdRoute = TitleIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/music': typeof MusicRoute
+  '/search': typeof SearchRoute
   '/category/$slug': typeof CategorySlugRoute
   '/title/$id': typeof TitleIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/music': typeof MusicRoute
+  '/search': typeof SearchRoute
   '/category/$slug': typeof CategorySlugRoute
   '/title/$id': typeof TitleIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/music': typeof MusicRoute
+  '/search': typeof SearchRoute
   '/category/$slug': typeof CategorySlugRoute
   '/title/$id': typeof TitleIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/category/$slug' | '/title/$id'
+  fullPaths: '/' | '/music' | '/search' | '/category/$slug' | '/title/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/category/$slug' | '/title/$id'
-  id: '__root__' | '/' | '/category/$slug' | '/title/$id'
+  to: '/' | '/music' | '/search' | '/category/$slug' | '/title/$id'
+  id: '__root__' | '/' | '/music' | '/search' | '/category/$slug' | '/title/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  MusicRoute: typeof MusicRoute
+  SearchRoute: typeof SearchRoute
   CategorySlugRoute: typeof CategorySlugRoute
   TitleIdRoute: typeof TitleIdRoute
 }
@@ -66,6 +86,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/music': {
+      id: '/music'
+      path: '/music'
+      fullPath: '/music'
+      preLoaderRoute: typeof MusicRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/search': {
+      id: '/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof SearchRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/category/$slug': {
@@ -87,6 +121,8 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  MusicRoute: MusicRoute,
+  SearchRoute: SearchRoute,
   CategorySlugRoute: CategorySlugRoute,
   TitleIdRoute: TitleIdRoute,
 }
