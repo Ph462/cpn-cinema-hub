@@ -92,29 +92,77 @@ function inCategory(t: Title, slug: string) {
 
 const byRating = (a: Title, b: Title) => (b.rating ?? 0) - (a.rating ?? 0);
 
+const KDRAMA_TITLES = [
+  "Squid Game",
+  "Crash Landing on You",
+  "Goblin",
+  "Itaewon Class",
+  "Vincenzo",
+  "Hospital Playlist",
+  "My Mister",
+  "Signal",
+  "Reply 1988",
+  "Sky Castle",
+  "Kingdom",
+  "Descendants of the Sun",
+  "Hometown Cha-Cha-Cha",
+  "The Glory",
+  "Extraordinary Attorney Woo",
+  "Mr. Sunshine",
+  "Sweet Home",
+  "Alchemy of Souls",
+  "Moving",
+  "Twenty-Five Twenty-One",
+];
+
+let kCache: { at: number; items: Title[] } | null = null;
+
+async function loadKDrama(): Promise<Title[]> {
+  if (kCache && Date.now() - kCache.at < 1000 * 60 * 60) return kCache.items;
+  const results = await Promise.all(
+    KDRAMA_TITLES.map((name) =>
+      fetch(`https://api.tvmaze.com/singlesearch/shows?q=${encodeURIComponent(name)}`)
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null),
+    ),
+  );
+  const items = (results.filter(Boolean) as any[]).map(mapShow).filter((t) => t.poster);
+  kCache = { at: Date.now(), items };
+  return items;
+}
+
+async function itemsFor(slug: string): Promise<Title[]> {
+  if (slug === "k-drama") {
+    const [korean, all] = await Promise.all([loadKDrama(), loadCatalog()]);
+    const extra = all.filter(
+      (t) => t.language === "Korean" && !korean.some((k) => k.id === t.id),
+    );
+    return [...korean, ...extra].sort(byRating);
+  }
+  const all = await loadCatalog();
+  return all.filter((t) => inCategory(t, slug)).sort(byRating);
+}
+
 export const getHome = createServerFn({ method: "GET" }).handler(async () => {
   const all = await loadCatalog();
   const featured = all
     .filter((t) => t.banner && t.summary.length > 80)
     .sort(byRating)
     .slice(0, 6);
-  const rows = CATEGORIES.map((c) => ({
-    ...c,
-    items: all.filter((t) => inCategory(t, c.slug)).sort(byRating).slice(0, 14),
-  })).filter((r) => r.items.length > 3);
-  return { featured, rows };
+  const rows = await Promise.all(
+    CATEGORIES.map(async (c) => ({ ...c, items: (await itemsFor(c.slug)).slice(0, 14) })),
+  );
+  return { featured, rows: rows.filter((r) => r.items.length > 3) };
 });
 
 export const getCategory = createServerFn({ method: "GET" })
   .inputValidator((data: { slug: string }) => data)
-  .handler(async ({ data }) => {
-    const all = await loadCatalog();
-    return {
-      slug: data.slug,
-      label: CATEGORIES.find((c) => c.slug === data.slug)?.label ?? data.slug,
-      items: all.filter((t) => inCategory(t, data.slug)).sort(byRating).slice(0, 60),
-    };
-  });
+  .handler(async ({ data }) => ({
+    slug: data.slug,
+    label: CATEGORIES.find((c) => c.slug === data.slug)?.label ?? data.slug,
+    items: (await itemsFor(data.slug)).slice(0, 60),
+  }));
+
 
 export const getTitle = createServerFn({ method: "GET" })
   .inputValidator((data: { id: string }) => data)
