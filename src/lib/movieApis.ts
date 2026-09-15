@@ -1,111 +1,75 @@
 /**
- * CPN Cinema Hub
- * Movie API service
+ * CPN Cinema Hub media API client.
  *
- * File:
- *   src/lib/movieApis.ts
+ * Expected backend routes:
  *
- * Provider:
- *   DavidCyrilTech Movie APIs
+ * GET  /api/media/search?q=...
+ * GET  /api/media/latest
+ * GET  /api/media/:id
+ * GET  /api/media/:id/stream
+ * GET  /api/media/:id/download
  *
- * IMPORTANT:
- * Use streaming/download functionality only for content
- * that you are legally permitted to access or distribute.
+ * Only publish media that you own or are authorized to distribute.
  */
 
 const API_BASE_URL =
-  "https://apis.davidcyril.name.ng";
+  import.meta.env.VITE_MEDIA_API_URL ||
+  "/api";
 
-/**
- * API endpoint names used by CPN Cinema Hub.
- *
- * Replace the empty path strings with the exact paths
- * shown in the provider's API documentation.
- */
-export const MOVIE_ENDPOINTS = {
-  watchMovieStreamsDownload: "",
-  naijapreyInfoDownloadUrl: "",
-  naijapreyLatest: "",
-  naijapreySearch: "",
-
-  nkiriSearch: "",
-  nkiriLatest: "",
-  nkiriInfo: "",
-
-  streamXInfoStreamLinks: "",
-  streamXLatestStreamLinks: "",
-
-  subttSearchInfo: "",
-
-  seriezloadedSearch: "",
-  seriezloadedLatest: "",
-  seriezloadedInfo: "",
-
-  moviesfoundonlineSearch: "",
-  moviesfoundonlineLatest: "",
-  moviesfoundonlineInfo: "",
-} as const;
-
-export type MovieEndpoint =
-  keyof typeof MOVIE_ENDPOINTS;
-
-/**
- * Generic response type.
- *
- * The external API can return different structures,
- * therefore data is intentionally typed as unknown.
- */
-export interface MovieApiResponse<T = unknown> {
-  success?: boolean;
-  status?: boolean;
-  message?: string;
-  data?: T;
-  result?: T;
-  results?: T;
-  [key: string]: unknown;
+export interface MediaItem {
+  id: string;
+  title: string;
+  description?: string;
+  posterUrl?: string;
+  backdropUrl?: string;
+  type?: "movie" | "series" | "song" | "video";
+  genre?: string;
+  year?: number;
+  duration?: number;
+  streamUrl?: string;
+  downloadUrl?: string;
 }
 
-/**
- * Build an API URL with query parameters.
- */
-export function buildMovieApiUrl(
-  endpoint: MovieEndpoint,
-  params: Record<string, string | number | boolean | undefined> = {},
-): string {
-  const path = MOVIE_ENDPOINTS[endpoint];
+export interface MediaSearchResponse {
+  success: boolean;
+  items: MediaItem[];
+  page?: number;
+  total?: number;
+  hasMore?: boolean;
+}
 
-  if (!path) {
-    throw new Error(
-      `No API path has been configured for "${endpoint}". ` +
-        `Add the exact path from the provider documentation.`,
-    );
-  }
+export interface MediaDetailsResponse {
+  success: boolean;
+  item: MediaItem;
+}
 
-  const url = new URL(path, API_BASE_URL);
+export interface MediaStreamResponse {
+  success: boolean;
+  streamUrl: string;
+  mimeType?: string;
+  expiresAt?: string;
+}
 
-  Object.entries(params).forEach(([key, value]) => {
-    if (
-      value !== undefined &&
-      value !== null &&
-      value !== ""
-    ) {
+export interface MediaDownloadResponse {
+  success: boolean;
+  downloadUrl: string;
+  fileName?: string;
+  expiresAt?: string;
+}
+
+async function request<T>(
+  path: string,
+  params?: Record<string, string | number | undefined>,
+): Promise<T> {
+  const url = new URL(path, window.location.origin);
+
+  Object.entries(params ?? {}).forEach(([key, value]) => {
+    if (value !== undefined && value !== "") {
       url.searchParams.set(key, String(value));
     }
   });
 
-  return url.toString();
-}
-
-/**
- * Generic GET request.
- */
-export async function movieApiGet<T = unknown>(
-  endpoint: MovieEndpoint,
-  params: Record<string, string | number | boolean | undefined> = {},
-): Promise<T> {
-  const url = buildMovieApiUrl(endpoint, params);
-
-  const response = await fetch(url, {
+  const response = await fetch(url.toString(), {
     method: "GET",
     headers: {
       Accept: "application/json",
@@ -114,261 +78,88 @@ export async function movieApiGet<T = unknown>(
 
   if (!response.ok) {
     throw new Error(
-      `Movie API request failed: ${response.status} ${response.statusText}`,
+      `Media API error: ${response.status} ${response.statusText}`,
     );
   }
 
-  const contentType =
-    response.headers.get("content-type") ?? "";
-
-  if (!contentType.includes("application/json")) {
-    return (await response.text()) as T;
-  }
-
-  return (await response.json()) as T;
+  return response.json() as Promise<T>;
 }
 
-/* =========================================================
-   NAIJAPREY
-   ========================================================= */
-
-export async function naijapreyLatest<T = unknown>() {
-  return movieApiGet<T>(
-    "naijapreyLatest",
-  );
-}
-
-export async function naijapreySearch<T = unknown>(
+export async function searchMedia(
   query: string,
-) {
-  return movieApiGet<T>(
-    "naijapreySearch",
+  page = 1,
+): Promise<MediaSearchResponse> {
+  return request<MediaSearchResponse>(
+    `${API_BASE_URL}/media/search`,
     {
-      query,
       q: query,
-      search: query,
+      page,
     },
   );
 }
 
-export async function naijapreyInfo<T = unknown>(
-  idOrUrl: string,
-) {
-  return movieApiGet<T>(
-    "naijapreyInfoDownloadUrl",
+export async function getLatestMedia(
+  page = 1,
+): Promise<MediaSearchResponse> {
+  return request<MediaSearchResponse>(
+    `${API_BASE_URL}/media/latest`,
     {
-      id: idOrUrl,
-      url: idOrUrl,
+      page,
     },
   );
 }
 
-/* =========================================================
-   NKIRI
-   ========================================================= */
-
-export async function nkiriLatest<T = unknown>() {
-  return movieApiGet<T>(
-    "nkiriLatest",
+export async function getMediaDetails(
+  mediaId: string,
+): Promise<MediaDetailsResponse> {
+  return request<MediaDetailsResponse>(
+    `${API_BASE_URL}/media/${encodeURIComponent(mediaId)}`,
   );
 }
 
-export async function nkiriSearch<T = unknown>(
-  query: string,
-) {
-  return movieApiGet<T>(
-    "nkiriSearch",
-    {
-      query,
-      q: query,
-      search: query,
-    },
+export async function getMediaStream(
+  mediaId: string,
+): Promise<MediaStreamResponse> {
+  return request<MediaStreamResponse>(
+    `${API_BASE_URL}/media/${encodeURIComponent(mediaId)}/stream`,
   );
 }
 
-export async function nkiriInfo<T = unknown>(
-  idOrUrl: string,
-) {
-  return movieApiGet<T>(
-    "nkiriInfo",
-    {
-      id: idOrUrl,
-      url: idOrUrl,
-    },
+export async function getMediaDownload(
+  mediaId: string,
+): Promise<MediaDownloadResponse> {
+  return request<MediaDownloadResponse>(
+    `${API_BASE_URL}/media/${encodeURIComponent(mediaId)}/download`,
   );
 }
 
-/* =========================================================
-   STREAM X
-   ========================================================= */
-
-export async function streamXLatest<T = unknown>() {
-  return movieApiGet<T>(
-    "streamXLatestStreamLinks",
-  );
+export function getPosterUrl(
+  item: MediaItem,
+): string {
+  return item.posterUrl || "/placeholder-poster.jpg";
 }
 
-export async function streamXInfo<T = unknown>(
-  idOrUrl: string,
-) {
-  return movieApiGet<T>(
-    "streamXInfoStreamLinks",
-    {
-      id: idOrUrl,
-      url: idOrUrl,
-    },
-  );
+export function getStreamUrl(
+  response: MediaStreamResponse,
+): string {
+  return response.streamUrl;
 }
 
-/* =========================================================
-   SUBTT
-   ========================================================= */
-
-export async function subttSearch<T = unknown>(
-  query: string,
-) {
-  return movieApiGet<T>(
-    "subttSearchInfo",
-    {
-      query,
-      q: query,
-      search: query,
-    },
-  );
+export function getDownloadUrl(
+  response: MediaDownloadResponse,
+): string {
+  return response.downloadUrl;
 }
-
-/* =========================================================
-   SERIEZLOADED
-   ========================================================= */
-
-export async function seriezloadedLatest<T = unknown>() {
-  return movieApiGet<T>(
-    "seriezloadedLatest",
-  );
-}
-
-export async function seriezloadedSearch<T = unknown>(
-  query: string,
-) {
-  return movieApiGet<T>(
-    "seriezloadedSearch",
-    {
-      query,
-      q: query,
-      search: query,
-    },
-  );
-}
-
-export async function seriezloadedInfo<T = unknown>(
-  idOrUrl: string,
-) {
-  return movieApiGet<T>(
-    "seriezloadedInfo",
-    {
-      id: idOrUrl,
-      url: idOrUrl,
-    },
-  );
-}
-
-/* =========================================================
-   MOVIESFOUNDONLINE
-   ========================================================= */
-
-export async function moviesfoundonlineLatest<T = unknown>() {
-  return movieApiGet<T>(
-    "moviesfoundonlineLatest",
-  );
-}
-
-export async function moviesfoundonlineSearch<T = unknown>(
-  query: string,
-) {
-  return movieApiGet<T>(
-    "moviesfoundonlineSearch",
-    {
-      query,
-      q: query,
-      search: query,
-    },
-  );
-}
-
-export async function moviesfoundonlineInfo<T = unknown>(
-  idOrUrl: string,
-) {
-  return movieApiGet<T>(
-    "moviesfoundonlineInfo",
-    {
-      id: idOrUrl,
-      url: idOrUrl,
-    },
-  );
-}
-
-/* =========================================================
-   WATCH / STREAM / DOWNLOAD
-   ========================================================= */
-
-export async function watchMovieStreamsDownload<T = unknown>(
-  idOrUrl: string,
-) {
-  return movieApiGet<T>(
-    "watchMovieStreamsDownload",
-    {
-      id: idOrUrl,
-      url: idOrUrl,
-    },
-  );
-}
-
-/* =========================================================
-   DEFAULT EXPORT
-   ========================================================= */
 
 const movieApis = {
-  endpoints: MOVIE_ENDPOINTS,
-
-  get: movieApiGet,
-  buildUrl: buildMovieApiUrl,
-
-  naijaprey: {
-    latest: naijapreyLatest,
-    search: naijapreySearch,
-    info: naijapreyInfo,
-  },
-
-  nkiri: {
-    latest: nkiriLatest,
-    search: nkiriSearch,
-    info: nkiriInfo,
-  },
-
-  streamX: {
-    latest: streamXLatest,
-    info: streamXInfo,
-  },
-
-  subtt: {
-    search: subttSearch,
-  },
-
-  seriezloaded: {
-    latest: seriezloadedLatest,
-    search: seriezloadedSearch,
-    info: seriezloadedInfo,
-  },
-
-  moviesfoundonline: {
-    latest: moviesfoundonlineLatest,
-    search: moviesfoundonlineSearch,
-    info: moviesfoundonlineInfo,
-  },
-
-  watch: {
-    streamsDownload: watchMovieStreamsDownload,
-  },
+  searchMedia,
+  getLatestMedia,
+  getMediaDetails,
+  getMediaStream,
+  getMediaDownload,
+  getPosterUrl,
+  getStreamUrl,
+  getDownloadUrl,
 };
 
 export default movieApis;
