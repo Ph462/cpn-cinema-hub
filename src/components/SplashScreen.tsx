@@ -23,9 +23,10 @@ export function SplashScreen() {
     >
       <div className="pointer-events-none absolute inset-0 bg-hero-glow" />
       <div className="relative flex flex-col items-center">
+        
         <div className="flex items-center gap-3">
           <span className="grid h-14 w-14 place-items-center rounded-2xl bg-primary text-2xl font-black text-primary-foreground shadow-glow">
-            CPN
+             CPN
           </span>
           <span className="text-4xl font-black tracking-tight text-foreground">
             CPN <span className="text-primary">Movies</span>
