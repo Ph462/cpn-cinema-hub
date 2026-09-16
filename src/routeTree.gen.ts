@@ -10,14 +10,21 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as FreeRouteImport } from './routes/free'
 import { Route as MusicRouteImport } from './routes/music'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as CategorySlugRouteImport } from './routes/category.$slug'
 import { Route as TitleIdRouteImport } from './routes/title.$id'
+import { Route as WatchIdRouteImport } from './routes/watch.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FreeRoute = FreeRouteImport.update({
+  id: '/free',
+  path: '/free',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MusicRoute = MusicRouteImport.update({
@@ -40,43 +47,78 @@ const TitleIdRoute = TitleIdRouteImport.update({
   path: '/title/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WatchIdRoute = WatchIdRouteImport.update({
+  id: '/watch/$id',
+  path: '/watch/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/free': typeof FreeRoute
   '/music': typeof MusicRoute
   '/search': typeof SearchRoute
   '/category/$slug': typeof CategorySlugRoute
   '/title/$id': typeof TitleIdRoute
+  '/watch/$id': typeof WatchIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/free': typeof FreeRoute
   '/music': typeof MusicRoute
   '/search': typeof SearchRoute
   '/category/$slug': typeof CategorySlugRoute
   '/title/$id': typeof TitleIdRoute
+  '/watch/$id': typeof WatchIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/free': typeof FreeRoute
   '/music': typeof MusicRoute
   '/search': typeof SearchRoute
   '/category/$slug': typeof CategorySlugRoute
   '/title/$id': typeof TitleIdRoute
+  '/watch/$id': typeof WatchIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/music' | '/search' | '/category/$slug' | '/title/$id'
+  fullPaths:
+    | '/'
+    | '/free'
+    | '/music'
+    | '/search'
+    | '/category/$slug'
+    | '/title/$id'
+    | '/watch/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/music' | '/search' | '/category/$slug' | '/title/$id'
-  id: '__root__' | '/' | '/music' | '/search' | '/category/$slug' | '/title/$id'
+  to:
+    | '/'
+    | '/free'
+    | '/music'
+    | '/search'
+    | '/category/$slug'
+    | '/title/$id'
+    | '/watch/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/free'
+    | '/music'
+    | '/search'
+    | '/category/$slug'
+    | '/title/$id'
+    | '/watch/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  FreeRoute: typeof FreeRoute
   MusicRoute: typeof MusicRoute
   SearchRoute: typeof SearchRoute
   CategorySlugRoute: typeof CategorySlugRoute
   TitleIdRoute: typeof TitleIdRoute
+  WatchIdRoute: typeof WatchIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -86,6 +128,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/free': {
+      id: '/free'
+      path: '/free'
+      fullPath: '/free'
+      preLoaderRoute: typeof FreeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/music': {
@@ -116,15 +165,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TitleIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/watch/$id': {
+      id: '/watch/$id'
+      path: '/watch/$id'
+      fullPath: '/watch/$id'
+      preLoaderRoute: typeof WatchIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  FreeRoute: FreeRoute,
   MusicRoute: MusicRoute,
   SearchRoute: SearchRoute,
   CategorySlugRoute: CategorySlugRoute,
   TitleIdRoute: TitleIdRoute,
+  WatchIdRoute: WatchIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
