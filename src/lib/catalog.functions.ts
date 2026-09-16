@@ -269,7 +269,10 @@ async function iaSearch(query: string, rows: number, sort: string): Promise<Free
   const res = await fetch(url);
   if (!res.ok) return [];
   const json: any = await res.json();
-  return (json.response?.docs ?? []).map(mapFree);
+  const blocked = /\b(sex|nude|nudie|porn|erotic|xxx)\b/i;
+  return (json.response?.docs ?? [])
+    .map(mapFree)
+    .filter((m: FreeMovie) => !blocked.test(m.title) && !blocked.test(m.id));
 }
 
 const FREE_ROWS: { label: string; query: string }[] = [
