@@ -102,7 +102,16 @@ function Home() {
         {rows.map((r) => (
           <Row key={r.slug} label={r.label} slug={r.slug} items={r.items} />
         ))}
-        <div className="mt-14 px-4 sm:px-8">
+        <div className="mt-14 grid gap-4 px-4 sm:grid-cols-2 sm:px-8">
+          <Link
+            to="/free"
+            className="block rounded-2xl border border-primary/50 bg-card p-6 transition-colors hover:border-primary"
+          >
+            <h2 className="text-lg font-bold text-foreground">Watch &amp; download free movies</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Full films that play right here in the site — and download with one tap.
+            </p>
+          </Link>
           <Link
             to="/music"
             className="block rounded-2xl border border-border bg-card p-6 transition-colors hover:border-primary"
