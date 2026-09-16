@@ -232,3 +232,102 @@ export const getMusic = createServerFn({ method: "GET" })
 export const searchMusic = createServerFn({ method: "GET" })
   .inputValidator((data: { q: string }) => data)
   .handler(async ({ data }) => (data.q.trim() ? itunes(data.q, 18) : ([] as Track[])));
+
+export type FreeMovie = {
+  id: string;
+  title: string;
+  year: number | null;
+  description: string;
+  poster: string;
+};
+
+export type FreeMovieDetail = FreeMovie & {
+  videoUrl: string | null;
+  downloadUrl: string | null;
+  fileName: string | null;
+  sizeMb: number | null;
+  runtime: string | null;
+};
+
+const IA = "https://archive.org";
+
+function mapFree(d: any): FreeMovie {
+  return {
+    id: d.identifier,
+    title: d.title ?? d.identifier,
+    year: typeof d.year === "number" ? d.year : d.year ? Number(d.year) : null,
+    description: stripHtml(Array.isArray(d.description) ? d.description[0] : d.description).slice(0, 400),
+    poster: `${IA}/services/img/${d.identifier}`,
+  };
+}
+
+async function iaSearch(query: string, rows: number, sort: string): Promise<FreeMovie[]> {
+  const url =
+    `${IA}/advancedsearch.php?q=${encodeURIComponent(query)}` +
+    `&fl%5B%5D=identifier&fl%5B%5D=title&fl%5B%5D=year&fl%5B%5D=description` +
+    `&sort%5B%5D=${encodeURIComponent(sort)}&rows=${rows}&page=1&output=json`;
+  const res = await fetch(url);
+  if (!res.ok) return [];
+  const json: any = await res.json();
+  const blocked = /\b(sex|nude|nudie|porn|erotic|xxx)\b/i;
+  return (json.response?.docs ?? [])
+    .map(mapFree)
+    .filter((m: FreeMovie) => !blocked.test(m.title) && !blocked.test(m.id));
+}
+
+const FREE_ROWS: { label: string; query: string }[] = [
+  { label: "Most watched free films", query: "collection:(feature_films) AND mediatype:(movies) AND format:(MPEG4)" },
+  { label: "Classic action & adventure", query: "collection:(feature_films) AND mediatype:(movies) AND format:(MPEG4) AND (action OR adventure)" },
+  { label: "Horror & thrillers", query: "collection:(feature_films) AND mediatype:(movies) AND format:(MPEG4) AND (horror OR thriller)" },
+  { label: "Sci-fi", query: 'collection:(scifi_horror) AND mediatype:(movies) AND format:(MPEG4)' },
+  { label: "Comedy & cartoons", query: "collection:(classic_cartoons) AND mediatype:(movies) AND format:(MPEG4)" },
+  { label: "Noir & crime", query: "collection:(film_noir) AND mediatype:(movies) AND format:(MPEG4)" },
+];
+
+export const getFreeMovies = createServerFn({ method: "GET" }).handler(async () => {
+  const rows = await Promise.all(
+    FREE_ROWS.map(async (r) => ({
+      label: r.label,
+      items: await iaSearch(r.query, 18, "downloads desc"),
+    })),
+  );
+  return rows.filter((r) => r.items.length > 0);
+});
+
+export const searchFreeMovies = createServerFn({ method: "GET" })
+  .inputValidator((data: { q: string }) => data)
+  .handler(async ({ data }) => {
+    const q = data.q.trim();
+    if (!q) return [] as FreeMovie[];
+    return iaSearch(
+      `mediatype:(movies) AND format:(MPEG4) AND collection:(feature_films OR film_noir OR classic_cartoons OR scifi_horror OR moviesandfilms) AND (${q})`,
+      24,
+      "downloads desc",
+    );
+  });
+
+export const getFreeMovie = createServerFn({ method: "GET" })
+  .inputValidator((data: { id: string }) => data)
+  .handler(async ({ data }): Promise<FreeMovieDetail | null> => {
+    const res = await fetch(`${IA}/metadata/${encodeURIComponent(data.id)}`);
+    if (!res.ok) return null;
+    const meta: any = await res.json();
+    if (!meta.metadata) return null;
+    const m = meta.metadata;
+    const files: any[] = meta.files ?? [];
+    const playable = files.find((f) => /\.(mp4|m4v|ogv|webm)$/i.test(f.name ?? ""));
+    const name = playable?.name ?? null;
+    const url = name ? `${IA}/download/${encodeURIComponent(data.id)}/${encodeURI(name)}` : null;
+    return {
+      id: data.id,
+      title: Array.isArray(m.title) ? m.title[0] : (m.title ?? data.id),
+      year: m.year ? Number(m.year) : m.date ? Number(String(m.date).slice(0, 4)) : null,
+      description: stripHtml(Array.isArray(m.description) ? m.description[0] : m.description),
+      poster: `${IA}/services/img/${data.id}`,
+      videoUrl: url,
+      downloadUrl: url,
+      fileName: name,
+      sizeMb: playable?.size ? Math.round(Number(playable.size) / 1048576) : null,
+      runtime: playable?.length ?? null,
+    };
+  });

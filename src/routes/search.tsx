@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { searchTitles, searchMusic } from "@/lib/catalog.functions";
+import { searchTitles, searchMusic, searchFreeMovies } from "@/lib/catalog.functions";
 import { SiteHeader } from "@/components/SiteHeader";
 import { TitleCard } from "@/components/ui-bits";
+import { FreeCard } from "@/routes/free";
 
 export const Route = createFileRoute("/search")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -9,11 +10,12 @@ export const Route = createFileRoute("/search")({
   }),
   loaderDeps: ({ search }) => ({ q: search.q }),
   loader: async ({ deps }) => {
-    const [titles, tracks] = await Promise.all([
+    const [titles, tracks, free] = await Promise.all([
       searchTitles({ data: { q: deps.q } }),
       searchMusic({ data: { q: deps.q } }),
+      searchFreeMovies({ data: { q: deps.q } }),
     ]);
-    return { titles, tracks, q: deps.q };
+    return { titles, tracks, free, q: deps.q };
   },
   head: () => ({
     meta: [
@@ -30,7 +32,7 @@ export const Route = createFileRoute("/search")({
 });
 
 function SearchPage() {
-  const { titles, tracks, q } = Route.useLoaderData();
+  const { titles, tracks, free, q } = Route.useLoaderData();
 
   return (
     <div className="min-h-screen bg-background">
@@ -41,6 +43,17 @@ function SearchPage() {
         </h1>
 
         <h2 className="mt-8 mb-4 text-lg font-bold text-foreground">
+          Watch &amp; download now ({free.length})
+        </h2>
+        <div className="flex flex-wrap gap-4">
+          {free.length ? (
+            free.map((f) => <FreeCard key={f.id} item={f} />)
+          ) : (
+            <p className="text-sm text-muted-foreground">No free full movies matched.</p>
+          )}
+        </div>
+
+        <h2 className="mt-12 mb-4 text-lg font-bold text-foreground">
           Movies &amp; series ({titles.length})
         </h2>
         <div className="flex flex-wrap gap-4">
