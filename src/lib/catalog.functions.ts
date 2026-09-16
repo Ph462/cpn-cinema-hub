@@ -273,12 +273,12 @@ async function iaSearch(query: string, rows: number, sort: string): Promise<Free
 }
 
 const FREE_ROWS: { label: string; query: string }[] = [
-  { label: "Most watched free films", query: "collection:(feature_films) AND mediatype:(movies)" },
-  { label: "Classic action & adventure", query: "collection:(feature_films) AND mediatype:(movies) AND (action OR adventure)" },
-  { label: "Horror & thrillers", query: "collection:(feature_films) AND mediatype:(movies) AND (horror OR thriller)" },
-  { label: "Sci-fi", query: 'collection:(scifi_horror) AND mediatype:(movies)' },
-  { label: "Comedy & cartoons", query: "collection:(classic_cartoons) AND mediatype:(movies)" },
-  { label: "Noir & crime", query: "collection:(film_noir) AND mediatype:(movies)" },
+  { label: "Most watched free films", query: "collection:(feature_films) AND mediatype:(movies) AND format:(MPEG4)" },
+  { label: "Classic action & adventure", query: "collection:(feature_films) AND mediatype:(movies) AND format:(MPEG4) AND (action OR adventure)" },
+  { label: "Horror & thrillers", query: "collection:(feature_films) AND mediatype:(movies) AND format:(MPEG4) AND (horror OR thriller)" },
+  { label: "Sci-fi", query: 'collection:(scifi_horror) AND mediatype:(movies) AND format:(MPEG4)' },
+  { label: "Comedy & cartoons", query: "collection:(classic_cartoons) AND mediatype:(movies) AND format:(MPEG4)" },
+  { label: "Noir & crime", query: "collection:(film_noir) AND mediatype:(movies) AND format:(MPEG4)" },
 ];
 
 export const getFreeMovies = createServerFn({ method: "GET" }).handler(async () => {
@@ -297,7 +297,7 @@ export const searchFreeMovies = createServerFn({ method: "GET" })
     const q = data.q.trim();
     if (!q) return [] as FreeMovie[];
     return iaSearch(
-      `mediatype:(movies) AND collection:(feature_films OR film_noir OR classic_cartoons OR scifi_horror) AND (${q})`,
+      `mediatype:(movies) AND format:(MPEG4) AND collection:(feature_films OR film_noir OR classic_cartoons OR scifi_horror OR moviesandfilms) AND (${q})`,
       24,
       "downloads desc",
     );
