@@ -1,10 +1,15 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { getTitle } from "@/lib/catalog.functions";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { getTitle, searchFreeMovies } from "@/lib/catalog.functions";
 import { SiteHeader } from "@/components/SiteHeader";
 import { TitleCard } from "@/components/ui-bits";
 
 export const Route = createFileRoute("/title/$id")({
-  loader: ({ params }) => getTitle({ data: { id: params.id } }),
+  loader: async ({ params }) => {
+    const data = await getTitle({ data: { id: params.id } });
+    if (!data) return null;
+    const free = await searchFreeMovies({ data: { q: `title:("${data.title.name.replace(/"/g, "")}")` } }).catch(() => []);
+    return { ...data, freeMatch: free[0] ?? null };
+  },
   head: ({ loaderData }) => {
     if (!loaderData) {
       return {
@@ -41,7 +46,7 @@ function TitlePage() {
       </div>
     );
   }
-  const { title, cast, similar } = data;
+  const { title, cast, similar, freeMatch } = data;
   const trailer = `https://www.youtube.com/results?search_query=${encodeURIComponent(
     `${title.name} ${title.year ?? ""} official trailer`,
   )}`;
@@ -90,6 +95,15 @@ function TitlePage() {
             ) : null}
 
             <div className="mt-6 flex flex-wrap gap-3">
+              {freeMatch ? (
+                <Link
+                  to="/watch/$id"
+                  params={{ id: freeMatch.id }}
+                  className="rounded-full bg-accent px-6 py-2.5 text-sm font-semibold text-accent-foreground"
+                >
+                  ▶ Watch &amp; ⬇ Download free
+                </Link>
+              ) : null}
               <a
                 href={trailer}
                 target="_blank"
