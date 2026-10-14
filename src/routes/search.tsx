@@ -43,22 +43,18 @@ function SearchPage() {
         </h1>
 
         <h2 className="mt-8 mb-4 text-lg font-bold text-foreground">
-          Watch &amp; download now ({free.length})
+          Movies &amp; series ({free.length + titles.length})
         </h2>
         <div className="flex flex-wrap gap-4">
-          {free.length ? (
-            free.map((f) => <FreeCard key={f.id} item={f} />)
-          ) : (
-            <p className="text-sm text-muted-foreground">No free full movies matched.</p>
-          )}
-        </div>
-
-        <h2 className="mt-12 mb-4 text-lg font-bold text-foreground">
-          Movies &amp; series ({titles.length})
-        </h2>
-        <div className="flex flex-wrap gap-4">
-          {titles.length ? (
-            titles.map((t) => <TitleCard key={t.id} item={t} />)
+          {free.length + titles.length ? (
+            <>
+              {free.map((f) => (
+                <FreeCard key={f.id} item={f} />
+              ))}
+              {titles.map((t) => (
+                <TitleCard key={t.id} item={t} />
+              ))}
+            </>
           ) : (
             <p className="text-sm text-muted-foreground">Nothing found.</p>
           )}
