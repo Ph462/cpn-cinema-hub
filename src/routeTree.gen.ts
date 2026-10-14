@@ -16,6 +16,7 @@ import { Route as SearchRouteImport } from './routes/search'
 import { Route as CategorySlugRouteImport } from './routes/category.$slug'
 import { Route as TitleIdRouteImport } from './routes/title.$id'
 import { Route as WatchIdRouteImport } from './routes/watch.$id'
+import { Route as ApiPublicDownloadRouteImport } from './routes/api/public/download'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -52,6 +53,11 @@ const WatchIdRoute = WatchIdRouteImport.update({
   path: '/watch/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicDownloadRoute = ApiPublicDownloadRouteImport.update({
+  id: '/api/public/download',
+  path: '/api/public/download',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -61,6 +67,7 @@ export interface FileRoutesByFullPath {
   '/category/$slug': typeof CategorySlugRoute
   '/title/$id': typeof TitleIdRoute
   '/watch/$id': typeof WatchIdRoute
+  '/api/public/download': typeof ApiPublicDownloadRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -70,6 +77,7 @@ export interface FileRoutesByTo {
   '/category/$slug': typeof CategorySlugRoute
   '/title/$id': typeof TitleIdRoute
   '/watch/$id': typeof WatchIdRoute
+  '/api/public/download': typeof ApiPublicDownloadRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -80,6 +88,7 @@ export interface FileRoutesById {
   '/category/$slug': typeof CategorySlugRoute
   '/title/$id': typeof TitleIdRoute
   '/watch/$id': typeof WatchIdRoute
+  '/api/public/download': typeof ApiPublicDownloadRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -91,6 +100,7 @@ export interface FileRouteTypes {
     | '/category/$slug'
     | '/title/$id'
     | '/watch/$id'
+    | '/api/public/download'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -100,6 +110,7 @@ export interface FileRouteTypes {
     | '/category/$slug'
     | '/title/$id'
     | '/watch/$id'
+    | '/api/public/download'
   id:
     | '__root__'
     | '/'
@@ -109,6 +120,7 @@ export interface FileRouteTypes {
     | '/category/$slug'
     | '/title/$id'
     | '/watch/$id'
+    | '/api/public/download'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -119,6 +131,7 @@ export interface RootRouteChildren {
   CategorySlugRoute: typeof CategorySlugRoute
   TitleIdRoute: typeof TitleIdRoute
   WatchIdRoute: typeof WatchIdRoute
+  ApiPublicDownloadRoute: typeof ApiPublicDownloadRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -172,6 +185,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WatchIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/download': {
+      id: '/api/public/download'
+      path: '/api/public/download'
+      fullPath: '/api/public/download'
+      preLoaderRoute: typeof ApiPublicDownloadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -183,6 +203,7 @@ const rootRouteChildren: RootRouteChildren = {
   CategorySlugRoute: CategorySlugRoute,
   TitleIdRoute: TitleIdRoute,
   WatchIdRoute: WatchIdRoute,
+  ApiPublicDownloadRoute: ApiPublicDownloadRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
