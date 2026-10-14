@@ -143,8 +143,36 @@ async function itemsFor(slug: string): Promise<Title[]> {
   return all.filter((t) => inCategory(t, slug)).sort(byRating);
 }
 
+let latestCache: { at: number; items: Title[] } | null = null;
+
+async function loadLatest(): Promise<Title[]> {
+  if (latestCache && Date.now() - latestCache.at < 1000 * 60 * 30) return latestCache.items;
+  const today = new Date();
+  const days = [0, 1, 2].map((d) =>
+    new Date(today.getTime() - d * 86400000).toISOString().slice(0, 10),
+  );
+  const lists = await Promise.all(
+    days.flatMap((d) => [
+      fetch(`https://api.tvmaze.com/schedule/web?date=${d}`).then((r) => (r.ok ? r.json() : [])).catch(() => []),
+      fetch(`https://api.tvmaze.com/schedule?country=US&date=${d}`).then((r) => (r.ok ? r.json() : [])).catch(() => []),
+    ]),
+  );
+  const seen = new Set<number>();
+  const items: Title[] = [];
+  for (const ep of lists.flat() as any[]) {
+    const show = ep._embedded?.show ?? ep.show;
+    if (!show || seen.has(show.id)) continue;
+    seen.add(show.id);
+    const t = mapShow(show);
+    if (t.poster) items.push(t);
+  }
+  items.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
+  latestCache = { at: Date.now(), items };
+  return items;
+}
+
 export const getHome = createServerFn({ method: "GET" }).handler(async () => {
-  const all = await loadCatalog();
+  const [all, latest] = await Promise.all([loadCatalog(), loadLatest()]);
   const featured = all
     .filter((t) => t.banner && t.summary.length > 80)
     .sort(byRating)
@@ -152,7 +180,8 @@ export const getHome = createServerFn({ method: "GET" }).handler(async () => {
   const rows = await Promise.all(
     CATEGORIES.map(async (c) => ({ ...c, items: (await itemsFor(c.slug)).slice(0, 14) })),
   );
-  return { featured, rows: rows.filter((r) => r.items.length > 3) };
+  const latestRow = { slug: "latest", label: "New episodes this week", items: latest.slice(0, 20) };
+  return { featured, rows: [latestRow, ...rows].filter((r) => r.items.length > 3) };
 });
 
 export const getCategory = createServerFn({ method: "GET" })
