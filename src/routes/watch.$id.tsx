@@ -72,7 +72,7 @@ function WatchPage() {
           <div className="mt-5 flex flex-wrap gap-3">
             {film.downloadUrl ? (
               <a
-                href={film.downloadUrl}
+                href={`/api/public/download?url=${encodeURIComponent(film.downloadUrl)}&name=${encodeURIComponent(film.fileName ?? `${film.title}.mp4`)}`}
                 download={film.fileName ?? undefined}
                 className="rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground shadow-glow transition-transform hover:scale-105"
               >
