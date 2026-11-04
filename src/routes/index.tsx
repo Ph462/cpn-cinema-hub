@@ -4,6 +4,8 @@ import { getHome } from "@/lib/catalog.functions";
 import { SplashScreen } from "@/components/SplashScreen";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Row } from "@/components/ui-bits";
+import { getTmdbHome } from "@/lib/tmdb.functions";
+import { MovieRow } from "@/components/MovieCard";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -21,12 +23,15 @@ export const Route = createFileRoute("/")({
       },
     ],
   }),
-  loader: () => getHome(),
+  loader: async () => {
+    const [home, movieRows] = await Promise.all([getHome(), getTmdbHome().catch(() => [])]);
+    return { ...home, movieRows };
+  },
   component: Home,
 });
 
 function Home() {
-  const { featured, rows } = Route.useLoaderData();
+  const { featured, rows, movieRows } = Route.useLoaderData();
   const [i, setI] = useState(0);
 
   useEffect(() => {
@@ -99,6 +104,9 @@ function Home() {
       ) : null}
 
       <main className="pb-20">
+        {movieRows.map((r) => (
+          <MovieRow key={r.label} label={r.label} items={r.items} />
+        ))}
         {rows.map((r) => (
           <Row key={r.slug} label={r.label} slug={r.slug} items={r.items} />
         ))}

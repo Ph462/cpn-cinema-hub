@@ -14,6 +14,7 @@ import { Route as FreeRouteImport } from './routes/free'
 import { Route as MusicRouteImport } from './routes/music'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as CategorySlugRouteImport } from './routes/category.$slug'
+import { Route as MovieIdRouteImport } from './routes/movie.$id'
 import { Route as TitleIdRouteImport } from './routes/title.$id'
 import { Route as WatchIdRouteImport } from './routes/watch.$id'
 import { Route as ApiPublicDownloadRouteImport } from './routes/api/public/download'
@@ -43,6 +44,11 @@ const CategorySlugRoute = CategorySlugRouteImport.update({
   path: '/category/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MovieIdRoute = MovieIdRouteImport.update({
+  id: '/movie/$id',
+  path: '/movie/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TitleIdRoute = TitleIdRouteImport.update({
   id: '/title/$id',
   path: '/title/$id',
@@ -65,6 +71,7 @@ export interface FileRoutesByFullPath {
   '/music': typeof MusicRoute
   '/search': typeof SearchRoute
   '/category/$slug': typeof CategorySlugRoute
+  '/movie/$id': typeof MovieIdRoute
   '/title/$id': typeof TitleIdRoute
   '/watch/$id': typeof WatchIdRoute
   '/api/public/download': typeof ApiPublicDownloadRoute
@@ -75,6 +82,7 @@ export interface FileRoutesByTo {
   '/music': typeof MusicRoute
   '/search': typeof SearchRoute
   '/category/$slug': typeof CategorySlugRoute
+  '/movie/$id': typeof MovieIdRoute
   '/title/$id': typeof TitleIdRoute
   '/watch/$id': typeof WatchIdRoute
   '/api/public/download': typeof ApiPublicDownloadRoute
@@ -86,6 +94,7 @@ export interface FileRoutesById {
   '/music': typeof MusicRoute
   '/search': typeof SearchRoute
   '/category/$slug': typeof CategorySlugRoute
+  '/movie/$id': typeof MovieIdRoute
   '/title/$id': typeof TitleIdRoute
   '/watch/$id': typeof WatchIdRoute
   '/api/public/download': typeof ApiPublicDownloadRoute
@@ -98,6 +107,7 @@ export interface FileRouteTypes {
     | '/music'
     | '/search'
     | '/category/$slug'
+    | '/movie/$id'
     | '/title/$id'
     | '/watch/$id'
     | '/api/public/download'
@@ -108,6 +118,7 @@ export interface FileRouteTypes {
     | '/music'
     | '/search'
     | '/category/$slug'
+    | '/movie/$id'
     | '/title/$id'
     | '/watch/$id'
     | '/api/public/download'
@@ -118,6 +129,7 @@ export interface FileRouteTypes {
     | '/music'
     | '/search'
     | '/category/$slug'
+    | '/movie/$id'
     | '/title/$id'
     | '/watch/$id'
     | '/api/public/download'
@@ -129,6 +141,7 @@ export interface RootRouteChildren {
   MusicRoute: typeof MusicRoute
   SearchRoute: typeof SearchRoute
   CategorySlugRoute: typeof CategorySlugRoute
+  MovieIdRoute: typeof MovieIdRoute
   TitleIdRoute: typeof TitleIdRoute
   WatchIdRoute: typeof WatchIdRoute
   ApiPublicDownloadRoute: typeof ApiPublicDownloadRoute
@@ -171,6 +184,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CategorySlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/movie/$id': {
+      id: '/movie/$id'
+      path: '/movie/$id'
+      fullPath: '/movie/$id'
+      preLoaderRoute: typeof MovieIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/title/$id': {
       id: '/title/$id'
       path: '/title/$id'
@@ -201,6 +221,7 @@ const rootRouteChildren: RootRouteChildren = {
   MusicRoute: MusicRoute,
   SearchRoute: SearchRoute,
   CategorySlugRoute: CategorySlugRoute,
+  MovieIdRoute: MovieIdRoute,
   TitleIdRoute: TitleIdRoute,
   WatchIdRoute: WatchIdRoute,
   ApiPublicDownloadRoute: ApiPublicDownloadRoute,
