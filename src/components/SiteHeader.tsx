@@ -61,6 +61,7 @@ export function SiteHeader() {
           <Link to="/category/$slug" params={{ slug: "k-drama" }} className="transition-colors hover:text-foreground">K-Drama</Link>
           <Link to="/free" className="font-semibold text-primary transition-colors hover:text-foreground">Watch free</Link>
           <Link to="/music" className="transition-colors hover:text-foreground">Music</Link>
+          <Link to="/downloads" className="transition-colors hover:text-foreground">My downloads</Link>
         </nav>
 
         <div className="relative ml-auto w-full max-w-xs">

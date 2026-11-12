@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DownloadsRouteImport } from './routes/downloads'
 import { Route as FreeRouteImport } from './routes/free'
 import { Route as MusicRouteImport } from './routes/music'
 import { Route as SearchRouteImport } from './routes/search'
@@ -22,6 +23,11 @@ import { Route as ApiPublicDownloadRouteImport } from './routes/api/public/downl
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DownloadsRoute = DownloadsRouteImport.update({
+  id: '/downloads',
+  path: '/downloads',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FreeRoute = FreeRouteImport.update({
@@ -67,6 +73,7 @@ const ApiPublicDownloadRoute = ApiPublicDownloadRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/downloads': typeof DownloadsRoute
   '/free': typeof FreeRoute
   '/music': typeof MusicRoute
   '/search': typeof SearchRoute
@@ -78,6 +85,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/downloads': typeof DownloadsRoute
   '/free': typeof FreeRoute
   '/music': typeof MusicRoute
   '/search': typeof SearchRoute
@@ -90,6 +98,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/downloads': typeof DownloadsRoute
   '/free': typeof FreeRoute
   '/music': typeof MusicRoute
   '/search': typeof SearchRoute
@@ -103,6 +112,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/downloads'
     | '/free'
     | '/music'
     | '/search'
@@ -114,6 +124,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/downloads'
     | '/free'
     | '/music'
     | '/search'
@@ -125,6 +136,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/downloads'
     | '/free'
     | '/music'
     | '/search'
@@ -137,6 +149,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DownloadsRoute: typeof DownloadsRoute
   FreeRoute: typeof FreeRoute
   MusicRoute: typeof MusicRoute
   SearchRoute: typeof SearchRoute
@@ -154,6 +167,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/downloads': {
+      id: '/downloads'
+      path: '/downloads'
+      fullPath: '/downloads'
+      preLoaderRoute: typeof DownloadsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/free': {
@@ -217,6 +237,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DownloadsRoute: DownloadsRoute,
   FreeRoute: FreeRoute,
   MusicRoute: MusicRoute,
   SearchRoute: SearchRoute,

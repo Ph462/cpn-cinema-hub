@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { getFreeMovie } from "@/lib/catalog.functions";
 import { SiteHeader } from "@/components/SiteHeader";
+import { SaveOfflineButton } from "@/components/SaveOfflineButton";
 
 export const Route = createFileRoute("/watch/$id")({
   loader: ({ params }) => getFreeMovie({ data: { id: params.id } }),
@@ -78,6 +79,9 @@ function WatchPage() {
               >
                 ⬇ Download movie
               </a>
+            ) : null}
+            {film.downloadUrl ? (
+              <SaveOfflineButton id={film.id} title={film.title} poster={film.poster} url={film.downloadUrl} name={film.fileName ?? `${film.title}.mp4`} />
             ) : null}
             <Link
               to="/free"
