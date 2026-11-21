@@ -6,7 +6,7 @@ function refused(): boolean {
   if (!import.meta.env.PROD) return true;
   if (window.self !== window.top) return true;
   const h = window.location.hostname.toLowerCase();
-  const label = h.split(".")[0];
+  const label = h.split(".")[0] ?? "";
   if (LOVABLE.some((d) => h.endsWith(d)) && (PREVIEW_LABEL.test(label) || /^project--.+-dev$/.test(label))) return true;
   if (/(^|\.)lovableproject(-dev)?\.com$/.test(h) || /(^|\.)beta\.lovable\.dev$/.test(h)) return true;
   if (new URLSearchParams(window.location.search).get("sw") === "off") return true;
